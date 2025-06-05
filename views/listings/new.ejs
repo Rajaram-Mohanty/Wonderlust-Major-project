@@ -1,0 +1,68 @@
+<% layout("/layouts/boilerplate") %>
+
+  <body>
+    <div class="row">
+      <div class="col-8 offset-2">
+        <h3>Create a new listing</h3>
+        <br>
+        <form method="POST" action="/listings">
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" name="listing[title]" class="form-control" placeholder="enter title">
+            <!-- if you get any doubt in listing[title] read the below comment -->
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="listing[description]" class="form-control" cols="30" rows="10"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="image" class="form-label">URL/Link</label>
+            <input type="text" name="listing[image]" class="form-control" placeholder="enter the image  URL/Link">
+          </div>
+
+
+          <div class="row">
+            <div class="mb-3 col-4">
+              <label for="price" class="form-label">Price</label>
+              <input type="text" name="listing[price]" class="form-control" placeholder="enter the price">
+            </div>
+            
+            <div class="mb-3 col-8">
+              <label for="country" class="form-label">Country</label>
+              <input type="text" name="listing[country]" class="form-control" placeholder="enter the country">
+            </div>
+          </div>
+          
+
+          <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" name="listing[location]" class="form-control" placeholder="enter the location">
+          </div>
+
+          <br>
+          <button class="btn add-btn btn-dark">ADD</button>
+        </form>
+        <br>
+      </div>
+    </div>
+  </body>
+
+
+
+  <!-- Using name="listing[title]" in HTML forms ensures that when the form is submitted,
+  Express (with express.urlencoded({ extended: true })) parses the input as a nested object:
+  
+    req.body = {
+      listing: {
+        title: "..."
+      }
+    }
+
+  This is useful for directly passing the data into Mongoose models like:
+    const newListing = new Listing(req.body.listing);
+
+  Avoid using name="listing.title" — it will be parsed as:
+    req.body = { "listing.title": "..." }
+  which does not create a nested object. -->
