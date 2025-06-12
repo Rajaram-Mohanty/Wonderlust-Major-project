@@ -7,7 +7,8 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const {listingSchema} = require("./schema.js");
+const {listingSchema, reviewSchema} = require("./schema.js");
+const Review = require("./models/review.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wonderlust";
 
@@ -47,6 +48,16 @@ const validateListing= (req, res, next) => {
             next();
         }
 }
+const validateReview= (req, res, next) => {
+    let {error} = reviewSchema.validate(req.body);                          //.validate is a function of joi which returns the info about validation error
+        if(error){
+            let errMsg = error.details.map((el)=> el.message).join(",");
+            throw new ExpressError(400, error);
+        }
+        else{
+            next();
+        }
+}
 
 
 // index route
@@ -65,7 +76,7 @@ app.get("/listings/new", (req, res) => {
 //show route
 app.get("/listings/:id", wrapAsync(async(req,res) => {                           //always keep the id route at the last or else other route path will be treated as id by id route 
     let {id} = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("listings/show.ejs", {listing});
 })
 );
@@ -86,6 +97,7 @@ app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
 })
 )
 
+
 app.put("/listings/:id", validateListing, wrapAsync(async(req,res) => {
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing});
@@ -93,15 +105,35 @@ app.put("/listings/:id", validateListing, wrapAsync(async(req,res) => {
 })
 );
 
-
+//delete route
 app.delete("/listings/:id", wrapAsync(async(req,res) => {
     let {id} = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
+    let deletedListing = await Listing.findByIdAndDelete(id);        //findByIdAndDelete will also call a middleware which is defined in the listing.js file
+    console.log(deletedListing);                                     //and the particular listing with the extracted id is received as parameter in the post route in listing.js
     res.redirect("/listings");
 })
 );
 
+//Reviews 
+//post route
+app.post("/listings/:id/reviews", validateReview, wrapAsync(async(req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+    res.redirect(`/listings/${listing._id}`);
+}))
+
+//Delete review route
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async(req,res) => {
+    let {id, reviewId} = req.params;
+    await Listing.findByIdAndUpdate(id, {$pull: {reviews: reviewId}});
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/listings/${id}`);
+}))
 
 /* app.get("/testListing", async(req, res) => {
     let sampleListing = new Listing ({
@@ -129,3 +161,4 @@ app.use((err, req, res, next) => {
 app.listen(8080, () => {
     console.log("Hey i am the root");
 });
+

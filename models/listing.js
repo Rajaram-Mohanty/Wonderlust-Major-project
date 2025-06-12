@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const review = require("./review");
 const Schema = mongoose.Schema;
 
 const listingSchema = new Schema({
@@ -22,8 +23,22 @@ const listingSchema = new Schema({
     },
     price: Number,
     location: String,
-    country: String
+    country: String,
+    reviews: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Review"
+        }
+    ]
 });
+
+
+listingSchema.post("findOneAndDelete", async(listing) => {                    //this is a special mongodb middleware to delete a database before or after deleting another database using .pre or .post .
+    if(listing){
+        console.log(listing);
+        await review.deleteMany({_id: {$in: listing.reviews}});
+    }
+})
 
 const Listing = mongoose.model("Listing", listingSchema);
 module.exports = Listing;
