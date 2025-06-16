@@ -1,16 +1,15 @@
 <% layout("/layouts/boilerplate") %>
-
-    <body>
         <h3>All Listings</h3>
         <!-- <form method="GET" action="/listings/new">
         <button>create new listing</button>
-    </form> -->
+        </form> -->
         <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
             <% for (let listing of allListings) { %>
                 <a href="/listings/<%= listing.id %>" class="listing-link">
                     <div class="card col listing-card">
                         <img src="<%= listing.image %>" class="card-img-top" alt="listing_image">
-                        <div class="card-img-overlay"></div>                                                <!-- here we used overlay to create the hover effect on the image so no need to inser anything in the div -->
+                        <div class="card-img-overlay"></div>
+                        <!-- here we used overlay to create the hover effect on the image so no need to inser anything in the div -->
                         <div class="card-body">
                             <p class="card-text">
                                 <b>
@@ -24,5 +23,3 @@
                 </a>
                 <% } %>
         </div>
-
-    </body>

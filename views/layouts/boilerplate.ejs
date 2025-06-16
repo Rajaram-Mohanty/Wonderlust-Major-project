@@ -13,10 +13,11 @@
 <body class="d-flex flex-column min-vh-100">
     <%- include("../includes/navbar.ejs") %>           
     <main class="flex-fill container">
+        <%- include("../includes/flash.ejs") %>           
         <%- body %>
     </main>
     <!-- this ejs tag is used to import the bodies of other page and insert it here -->
-    <%- include("../includes/footer.ejs") %>           
+               
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
     <script src="/js/script.js"></script>
 </body>
