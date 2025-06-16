@@ -4,7 +4,7 @@ const Listing = require("../models/listing.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/ExpressError.js");
 const {listingSchema} = require("../schema.js");
-
+const {isLoggedIn} = require("../middleware.js");
 
 const validateListing= (req, res, next) => {
     let {error} = listingSchema.validate(req.body);                          //.validate is a function of joi which returns the info about validation error
@@ -25,12 +25,12 @@ router.get("/", wrapAsync(async (req, res) => {
 )
 
 //new route
-router.get("/new", (req, res) => {
+router.get("/new",isLoggedIn, (req, res) => {
     res.render("listings/new.ejs");
 })
 
 //show route
-router.get("/:id", wrapAsync(async(req,res) => {                           //always keep the id route at the last or else other route path will be treated as id by id route 
+router.get("/:id",isLoggedIn, wrapAsync(async(req,res) => {                           //always keep the id route at the last or else other route path will be treated as id by id route 
     let {id} = req.params;
     const listing = await Listing.findById(id).populate("reviews");
     if(!listing){
@@ -51,7 +51,7 @@ router.post("/", validateListing, wrapAsync(async(req, res, next)=> {
 );
 
 // edit route
-router.get("/:id/edit", wrapAsync(async (req, res) => {
+router.get("/:id/edit",isLoggedIn, wrapAsync(async (req, res) => {
     let {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("listings/edit.ejs", {listing});
@@ -59,7 +59,7 @@ router.get("/:id/edit", wrapAsync(async (req, res) => {
 )
 
 // update route
-router.put("/:id", validateListing, wrapAsync(async(req,res) => {
+router.put("/:id", isLoggedIn, validateListing, wrapAsync(async(req,res) => {
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, {...req.body.listing});
     req.flash("success", "Listing updated");
@@ -68,7 +68,7 @@ router.put("/:id", validateListing, wrapAsync(async(req,res) => {
 );
 
 //delete route
-router.delete("/:id", wrapAsync(async(req,res) => {
+router.delete("/:id",isLoggedIn, wrapAsync(async(req,res) => {
     let {id} = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);        //findByIdAndDelete will also call a middleware which is defined in the listing.js file
     console.log(deletedListing);                                     //and the particular listing with the extracted id is received as parameter in the post route in listing.js
