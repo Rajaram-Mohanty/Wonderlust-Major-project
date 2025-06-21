@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV != "production") {
+    require("dotenv").config();               //dotenv is used to use the env variables in the backend.
+}
+
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
