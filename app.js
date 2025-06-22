@@ -1,3 +1,9 @@
+/* Dont forget to add
+"engines" : {
+    "node": "<node version>"
+}
+in package.json before deployment on render*/
+
 if(process.env.NODE_ENV != "production") {
     require("dotenv").config();               //dotenv is used to use the env variables in the backend.
 }
@@ -11,6 +17,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");              //session info is often stored in cookies, but usually it's just a session ID or token stored in the cookie, not the entire session data. The express-session middleware stores the session data on the server.
+const MongoStore = require("connect-mongo");             //this is used to store the session info in production environment
 const flash = require("connect-flash");
 const passport = require("passport");                   // the hashing algorithm used in passport is pbkdf2
 const LocalStrategy = require("passport-local");
@@ -23,7 +30,9 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wonderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wonderlust";
+
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
 .then(() => {
@@ -34,7 +43,7 @@ main()
 })
 
 async function main() {
-    await mongoose.connect(MONGO_URL);            //here we will use the test db
+    await mongoose.connect(dbUrl);            //here we will use the test db
   }
 
 
@@ -47,8 +56,23 @@ app.engine("ejs", ejsMate);                                     //This line sets
 app.use(express.static(path.join(__dirname, "/public")));                  //this is used to make separated boilerplate for all the pages that have things in common. but dont confuse it with includes, it is used to have mofularity in the webpages means modules for every section.
 
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+        secret: process.env.SECRET
+    },
+    touchAfter: 24*3600
+});
+
+
+store.on("error", () => {
+    console.log("ERROR in MONGO SESSION STORE",err);
+})
+
+
 const sessionOptions = {                         // this is used to implement cookie in sessionOptions
-    secret: "mysupersecretcode",
+    store,
+    secret: process.env.SECRET,
     resave: false,                                //Don’t save the session to the store if it wasn’t modified during the request.
     saveUninitialized: true,                      //A new session object is saved in the store, even if nothing has been set in the session.
     cookie: {
@@ -59,9 +83,12 @@ const sessionOptions = {                         // this is used to implement co
 };
 
 
-app.get("/" ,(req,res) => {
-    res.send("hi i am the root");
-});
+// app.get("/" ,(req,res) => {
+//     res.send("hi i am the root");
+// });
+
+
+
 
 
 app.use(session(sessionOptions));           // A session is a way to store information (data) about a user across multiple HTTP requests like the user login will be saved for certail time for the user convenience.
