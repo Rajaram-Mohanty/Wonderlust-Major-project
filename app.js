@@ -83,10 +83,9 @@ const sessionOptions = {                         // this is used to implement co
 };
 
 
-// app.get("/" ,(req,res) => {
-//     res.send("hi i am the root");
-// });
-
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 
 
 
@@ -102,7 +101,7 @@ passport.serializeUser(User.serializeUser());               //storing the info o
 passport.deserializeUser(User.deserializeUser());           //removing the stored info
 
 
-app.get("/demouser", async(req,res) => {
+/* app.get("/demouser", async(req,res) => {
     let fakeUser = new User({
     email: "student@gmail.com",
     username: "delta-student"
@@ -111,7 +110,7 @@ app.get("/demouser", async(req,res) => {
 
     let registeredUser = await User.register(fakeUser, "helloworld");     //this will save the fakeUser with password helloworld. It also checks if username is unique
     res.send(registeredUser);
-})
+}) */
 
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
